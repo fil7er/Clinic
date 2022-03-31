@@ -1,6 +1,7 @@
-﻿using Clinic.Src.VO.Employer;
+﻿using Clinic.Src.VO.Employers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clinic.Controllers
 {
@@ -8,23 +9,26 @@ namespace Clinic.Controllers
     [ApiController]
     public class EmployerController : ControllerBase
     {
-        private static List<Employer> employers = new List<Employer>
-        {
-                new Employer { Id = 1, Name = "First Employer", CPF ="123.123.123-23", Enrollment = 1, RG = "1231233-2", EmployerType = new EmployerType{ Id = 1, Name ="Doctor" }},
-                new Employer { Id = 2, Name = "Second Employer", CPF ="123.123.123-24", Enrollment = 1, RG = "1231233-3", EmployerType = new EmployerType{ Id = 1, Name ="Doctor" }}
 
-        };
-   
+        private readonly DataContext _dataContext;
+        public EmployerController(DataContext dataContext)
+        {
+            _dataContext = dataContext;
+        }
+
+
+
         [HttpGet]
-        public async Task<ActionResult<Employer>> Get()
+        public async Task<ActionResult<List<Employer>>> Get()
         {
             
-            return Ok(employers);
+            return Ok(await _dataContext.Employer.ToListAsync());
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Employer>> Get(int id)
         {
-            var employer = employers.Find(h => h.Id == id);
+            var employer = await _dataContext.Employer.FindAsync(id);
             if (employer == null) return BadRequest("Employer Not found.");
             return Ok(employer);
         }
@@ -32,29 +36,40 @@ namespace Clinic.Controllers
         [HttpPost]
         public async Task<ActionResult<Employer>> Post(Employer employer)
         {
-            employers.Add(employer);
-            return Ok(employers);
+            var employerType = await _dataContext.EmployerType.FindAsync(employer.EmployerType.Id);
+
+            employer.EmployerType = employerType;
+
+            _dataContext.Employer.Add(employer);
+            await _dataContext.SaveChangesAsync();
+            return Ok(await _dataContext.Employer.ToListAsync());
         }
+
+
         [HttpPut]
         public async Task<ActionResult<List<Employer>>> Put(Employer request)
         {
-            var employer = employers.Find(h => h.Id == request.Id);
+            var employer = await _dataContext.Employer.FindAsync(request.Id);
+
             if (employer == null) return BadRequest("Employer Not found.");
 
             employer.Name = request.Name;
             employer.RG = request.RG;
             employer.CPF = request.CPF;
             employer.Enrollment = request.Enrollment;
-            employer.EmployerType.Id = request.EmployerType.Id;
-            return Ok(employers);
+            employer.EmployerType = await _dataContext.EmployerType.FindAsync(request.EmployerType.Id);
+            employer.Active = request.Active;
+            return Ok(await _dataContext.Employer.ToListAsync());
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Employer>>> Delete(int id)
         {
-            var employer = employers.Find(h => h.Id == id);
+            var employer = await _dataContext.Employer.FindAsync(id);
             if (employer == null) return BadRequest("Employer Not found.");
-            employers.Remove(employer);
-            return Ok(employers);
+            _dataContext.Employer.Remove(employer);
+            await _dataContext.SaveChangesAsync();
+
+            return Ok(await _dataContext.Employer.ToListAsync());
         }
 
     }
