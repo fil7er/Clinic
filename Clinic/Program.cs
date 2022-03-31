@@ -1,10 +1,12 @@
+global using Clinic.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Clinic.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ClinicContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ClinicContext")));
+builder.Services.AddDbContext<DataContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 // Add services to the container.
 
