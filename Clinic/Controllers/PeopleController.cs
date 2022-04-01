@@ -1,6 +1,7 @@
 ﻿using Clinic.Src.VO.Peoples;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clinic.Controllers
 {
@@ -8,53 +9,56 @@ namespace Clinic.Controllers
     [ApiController]
     public class PeopleController : ControllerBase
     {
-        private static List<People> Peoples = new List<People>
+        private readonly DataContext _dataContext;
+        public PeopleController(DataContext dataContext)
         {
-                new People { Id = 1, Name = "First People", CPF ="223.123.123-23", RG = "1231233-2", Address="Street Nowhere"},
-                new People { Id = 2, Name = "Second People", CPF ="223.123.123-24", RG = "1231233-3", Address="Street Other"}
-
-        };
+            _dataContext = dataContext;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<People>> Get()
+        public async Task<ActionResult<List<People>>> Get()
         {
 
-            return Ok(Peoples);
+            return Ok(await _dataContext.People.ToListAsync());
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<People>> Get(int id)
         {
-            var People = Peoples.Find(h => h.Id == id);
-            if (People == null) return BadRequest("People Not found.");
-            return Ok(People);
+            var people = await _dataContext.People.FindAsync(id);
+            if (people == null) return BadRequest("People Not found.");
+            return Ok(people);
         }
 
         [HttpPost]
-        public async Task<ActionResult<People>> Post(People People)
+        public async Task<ActionResult<People>> Post(People people)
         {
-            Peoples.Add(People);
-            return Ok(Peoples);
+            _dataContext.People.Add(people);
+
+            await _dataContext.SaveChangesAsync();
+
+            return Ok(await _dataContext.People.ToListAsync());
         }
         [HttpPut]
         public async Task<ActionResult<List<People>>> Put(People request)
         {
-            var People = Peoples.Find(h => h.Id == request.Id);
-            if (People == null) return BadRequest("People Not found.");
+            var people = await _dataContext.People.FindAsync(request.Id);
+            if (people == null) return BadRequest("People Not found.");
 
-            People.Name = request.Name;
-            People.RG = request.RG;
-            People.CPF = request.CPF;
-            People.Address = request.Address;
+            people.Name = request.Name;
+            people.RG = request.RG;
+            people.CPF = request.CPF;
+            people.Address = request.Address;
 
-            return Ok(Peoples);
+            return Ok(await _dataContext.People.ToListAsync());
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<People>>> Delete(int id)
         {
-            var People = Peoples.Find(h => h.Id == id);
+            var People = await _dataContext.People.FindAsync(id);
             if (People == null) return BadRequest("People Not found.");
-            Peoples.Remove(People);
-            return Ok(Peoples);
+            _dataContext.People.Remove(People);
+            await _dataContext.SaveChangesAsync();
+            return Ok(await _dataContext.People.ToListAsync());
         }
     }
 }

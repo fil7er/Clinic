@@ -4,6 +4,7 @@ using Clinic.Src.VO.Peoples;
 using Clinic.Src.VO.Procedures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clinic.Controllers
 {
@@ -11,37 +12,53 @@ namespace Clinic.Controllers
     [ApiController]
     public class AttendanceController : ControllerBase
     {
-        private static List<Attendance> Attendances = new List<Attendance>
-        {
-                new Attendance { Id = 1, EmployerDoctor = new Employer{Id = 1}, EmployerAttendant = new Employer{ Id = 2 }, Date = DateTime.Parse("2022-03-31 17:00 PM"), People = new People{Id = 1 }, Procedure = new Procedure{ Id = 1 } },
-                new Attendance { Id = 2, EmployerDoctor = new Employer{Id = 3}, EmployerAttendant = new Employer{ Id = 4 }, Date = DateTime.Parse("2022-03-31 17:00 PM"), People = new People{Id = 2 }, Procedure = new Procedure{ Id = 2 } }
+        private readonly DataContext _dataContext;
 
-        };
+        public AttendanceController(DataContext dataContext)
+        {
+            _dataContext = dataContext;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<Attendance>> Get()
+        public async Task<ActionResult<List<Attendance>>> Get()
         {
 
-            return Ok(Attendances);
+            return Ok(await _dataContext.Attendance.ToListAsync());
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<Attendance>> Get(int id)
         {
-            var Attendance = Attendances.Find(h => h.Id == id);
+            var Attendance = await _dataContext.Attendance.FindAsync(id);
             if (Attendance == null) return BadRequest("Attendance Not found.");
             return Ok(Attendance);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Attendance>> Post(Attendance Attendance)
+        public async Task<ActionResult<List<Attendance>>> Post(Attendance Attendance)
         {
-            Attendances.Add(Attendance);
-            return Ok(Attendances);
+            Dictionary<string, Object> listObjects = new Dictionary<string, Object>();
+
+            listObjects.Add("Doctor", await _dataContext.Employer.FindAsync(Attendance.EmployerDoctor.Id));
+            listObjects.Add("Attendant", await _dataContext.Employer.FindAsync(Attendance.EmployerAttendant.Id));
+            listObjects.Add("People", await _dataContext.Employer.FindAsync(Attendance.People.Id));
+            listObjects.Add("Procedure", await _dataContext.Procedure.FindAsync(Attendance.Procedure.Id));
+
+            foreach(KeyValuePair<string, Object> entry in listObjects)
+            {
+                if(entry.Value == null) return BadRequest($"{entry.Key} not Found.");
+            }
+
+      
+
+
+            _dataContext.Attendance.Add(Attendance);
+            await _dataContext.SaveChangesAsync();
+            return Ok(await _dataContext.Attendance.ToListAsync());
         }
         [HttpPut]
         public async Task<ActionResult<List<Attendance>>> Put(Attendance request)
         {
-            var Attendance = Attendances.Find(h => h.Id == request.Id);
+            var Attendance = await _dataContext.Attendance.FindAsync(request.Id);
             if (Attendance == null) return BadRequest("Attendance Not found.");
 
             Attendance.Date = request.Date;
@@ -50,15 +67,16 @@ namespace Clinic.Controllers
             Attendance.EmployerAttendant.Id = request.EmployerAttendant.Id;
             Attendance.EmployerDoctor.Id = request.EmployerDoctor.Id;
 
-            return Ok(Attendances);
+            return Ok(await _dataContext.Attendance.ToListAsync());
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Attendance>>> Delete(int id)
         {
-            var Attendance = Attendances.Find(h => h.Id == id);
+            var Attendance = await _dataContext.Attendance.FindAsync(id);
             if (Attendance == null) return BadRequest("Attendance Not found.");
-            Attendances.Remove(Attendance);
-            return Ok(Attendances);
+            _dataContext.Attendance.Remove(Attendance);
+            await _dataContext.SaveChangesAsync();
+            return Ok(await _dataContext.Attendance.ToListAsync());
         }
     }
 }

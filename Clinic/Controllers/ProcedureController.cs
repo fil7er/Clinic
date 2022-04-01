@@ -1,6 +1,7 @@
 ﻿using Clinic.Src.VO.Procedures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clinic.Controllers
 {
@@ -8,51 +9,53 @@ namespace Clinic.Controllers
     [ApiController]
     public class ProcedureController : ControllerBase
     {
-        private static List<Procedure> Procedures = new List<Procedure>
-        {
-                new Procedure { Id = 1, Decryption = "First Procedure", Value = 25.6},
-                new Procedure { Id = 2, Decryption = "Second Procedure", Value = 23.87}
+        private readonly DataContext _dataContext;
 
-        };
+        public ProcedureController(DataContext dataContext)
+        {
+            _dataContext = dataContext;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<Procedure>> Get()
+        public async Task<ActionResult<List<Procedure>>> Get()
         {
 
-            return Ok(Procedures);
+            return Ok(await _dataContext.Procedure.ToListAsync());
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<Procedure>> Get(int id)
         {
-            var Procedure = Procedures.Find(h => h.Id == id);
+            var Procedure = await _dataContext.Procedure.FindAsync(id);
             if (Procedure == null) return BadRequest("Procedure Not found.");
             return Ok(Procedure);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Procedure>> Post(Procedure Procedure)
+        public async Task<ActionResult<List<Procedure>>> Post(Procedure Procedure)
         {
-            Procedures.Add(Procedure);
-            return Ok(Procedures);
+            _dataContext.Procedure.Add(Procedure);
+            await _dataContext.SaveChangesAsync();
+            return Ok(_dataContext.Procedure.ToList());
         }
         [HttpPut]
         public async Task<ActionResult<List<Procedure>>> Put(Procedure request)
         {
-            var Procedure = Procedures.Find(h => h.Id == request.Id);
+            var Procedure = await _dataContext.Procedure.FindAsync(request.Id);
             if (Procedure == null) return BadRequest("Procedure Not found.");
 
             Procedure.Decryption = request.Decryption;
             Procedure.Value = request.Value;
 
-            return Ok(Procedures);
+            return Ok(await _dataContext.Procedure.ToListAsync());
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Procedure>>> Delete(int id)
         {
-            var Procedure = Procedures.Find(h => h.Id == id);
+            var Procedure = await _dataContext.Procedure.FindAsync(id);
             if (Procedure == null) return BadRequest("Procedure Not found.");
-            Procedures.Remove(Procedure);
-            return Ok(Procedures);
+            _dataContext.Procedure.Remove(Procedure);
+            await _dataContext.SaveChangesAsync();
+            return Ok(await _dataContext.Procedure.ToListAsync());
         }
     }
 }

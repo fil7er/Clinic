@@ -38,6 +38,8 @@ namespace Clinic.Controllers
         {
             var employerType = await _dataContext.EmployerType.FindAsync(employer.EmployerType.Id);
 
+            if (employerType == null) return BadRequest("Employer Type Not found.");
+
             employer.EmployerType = employerType;
 
             _dataContext.Employer.Add(employer);
@@ -50,14 +52,16 @@ namespace Clinic.Controllers
         public async Task<ActionResult<List<Employer>>> Put(Employer request)
         {
             var employer = await _dataContext.Employer.FindAsync(request.Id);
+            var employerType = await _dataContext.EmployerType.FindAsync(request.EmployerType.Id);
 
             if (employer == null) return BadRequest("Employer Not found.");
+            if (employerType == null) return BadRequest("Employer Type not found.");
 
             employer.Name = request.Name;
             employer.RG = request.RG;
             employer.CPF = request.CPF;
             employer.Enrollment = request.Enrollment;
-            employer.EmployerType = await _dataContext.EmployerType.FindAsync(request.EmployerType.Id);
+            employer.EmployerType = employerType;
             employer.Active = request.Active;
             return Ok(await _dataContext.Employer.ToListAsync());
         }
