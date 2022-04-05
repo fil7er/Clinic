@@ -7,21 +7,17 @@ namespace Clinic.Src.VO.Employers
     {
 
 
-
+        [Key]
         public int Id { get; set; }
-        public string? Name { get; set; }
-        public int? Enrollment { get; set; }
-        public string? CPF { get; set; }
-        public string? RG { get; set; }
-        public bool? Active { get; set; }
-        
-   
-        [Required]
-        public EmployerType EmployerType { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int Enrollment { get; set; } = 0;
+        public string CPF { get; set; } = string.Empty;
+        public string RG { get; set; } = string.Empty;
+        public bool Active { get; set; } = false;
 
-        public Employer(EmployerType employerType)
-        {
-            EmployerType = employerType;
-        }
+
+        [Required]
+        public EmployerType EmployerType { get; set; } = new EmployerType();
+
     }
 }

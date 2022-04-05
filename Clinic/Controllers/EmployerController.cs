@@ -28,7 +28,7 @@ namespace Clinic.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Employer>> Get(int id)
         {
-            var employer = await _dataContext.Employer.FindAsync(id);
+            Employer? employer = await _dataContext.Employer.FindAsync(id);
             if (employer == null) return BadRequest("Employer Not found.");
             return Ok(employer);
         }
@@ -36,7 +36,7 @@ namespace Clinic.Controllers
         [HttpPost]
         public async Task<ActionResult<Employer>> Post(Employer employer)
         {
-            var employerType = await _dataContext.EmployerType.FindAsync(employer.EmployerType.Id);
+            EmployerType? employerType = await _dataContext.EmployerType.FindAsync(employer.EmployerType.Id);
 
             if (employerType == null) return BadRequest("Employer Type Not found.");
 
