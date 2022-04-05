@@ -36,14 +36,14 @@ namespace Clinic.Controllers
         [HttpPost]
         public async Task<ActionResult<List<Attendance>>> Post(Attendance Attendance)
         {
-            Dictionary<string, Object> listObjects = new Dictionary<string, Object>();
+            Dictionary<string, Object?> listObjects = new Dictionary<string, Object?>();
 
             listObjects.Add("Doctor", await _dataContext.Employer.FindAsync(Attendance.EmployerDoctor.Id));
             listObjects.Add("Attendant", await _dataContext.Employer.FindAsync(Attendance.EmployerAttendant.Id));
             listObjects.Add("People", await _dataContext.Employer.FindAsync(Attendance.People.Id));
             listObjects.Add("Procedure", await _dataContext.Procedure.FindAsync(Attendance.Procedure.Id));
 
-            foreach(KeyValuePair<string, Object> entry in listObjects)
+            foreach(KeyValuePair<string, Object?> entry in listObjects)
             {
                 if(entry.Value == null) return BadRequest($"{entry.Key} not Found.");
             }

@@ -11,15 +11,15 @@ namespace Clinic.Src.VO.Attendances
 
         public Attendance()
         {
-            EmployerDoctor = new Employer() {EmployerType = new EmployerType {Id = 1 } };
-            EmployerAttendant = new Employer() { EmployerType = new EmployerType { Id = 2 } };
+            EmployerDoctor = new Employer(new EmployerType() { Id = 1});
+            EmployerAttendant = new Employer(new EmployerType() { Id = 2 });
             People = new People();
             Procedure = new Procedure();
         }
         
-        public virtual Employer? EmployerDoctor { get; set; } 
-        public virtual Employer? EmployerAttendant { get; set; }
-        public virtual People? People { get; set; }
-        public virtual Procedure? Procedure { get; set; }
+        public  Employer EmployerDoctor { get; set; } 
+        public  Employer EmployerAttendant { get; set; }
+        public  People People { get; set; }
+        public  Procedure Procedure { get; set; }
     }
 }

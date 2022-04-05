@@ -1,14 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+
 
 namespace Clinic.Src.VO.Employers
 {
     public class Employer
     {
 
-        public Employer()
-        {
-            this.EmployerType = new EmployerType();
-        }
+
 
         public int Id { get; set; }
         public string? Name { get; set; }
@@ -18,7 +16,12 @@ namespace Clinic.Src.VO.Employers
         public bool? Active { get; set; }
         
    
+        [Required]
+        public EmployerType EmployerType { get; set; }
 
-        public virtual EmployerType? EmployerType { get; set; }
+        public Employer(EmployerType employerType)
+        {
+            EmployerType = employerType;
+        }
     }
 }
