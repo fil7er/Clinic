@@ -78,6 +78,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: .net-app
+          
+      - name: Azure Login
+        uses: Azure/login@v1
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
